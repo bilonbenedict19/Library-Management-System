@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Book Tickets</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Book Tickets for {{ movie['title'] }}</h1>
+    <form method="post">
+        <label for="showtime">Showtime:</label>
+        <select name="showtime" id="showtime">
+            {% for show in showtimes %}
+            <option value="{{ show['id'] }}">{{ show['time'] }}</option>
+            {% endfor %}
+        </select><br>
+        <label for="tickets">Number of tickets:</label>
+        <input type="number" name="tickets" id="tickets" min="1" value="1"><br>
+        <label for="name">Your Name:</label>
+        <input type="text" name="name" id="name" required><br>
+        <button type="submit">Book</button>
+    </form>
+    <a href="{{ url_for('index') }}">Back to movies</a>
+</body>
+</html>
