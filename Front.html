@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Movie Ticketing</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Available Movies</h1>
+    <ul>
+        {% for movie in movies %}
+        <li>
+            <strong>{{ movie['title'] }}</strong> (Price: ${{ movie['price'] }})<br>
+            Showtimes:
+            {% for show in showtimes_by_movie[movie['id']] %}
+                {{ show['time'] }}
+            {% endfor %}
+            <br>
+            <a href="{{ url_for('book', movie_id=movie['id']) }}">Book Tickets</a>
+        </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
