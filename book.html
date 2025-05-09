@@ -1,42 +1,78 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Book Tickets</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        .seat-checkbox { width: 30px; height: 30px; }
+        .seat-label { display: inline-block; width: 30px; text-align: center; }
+    </style>
 </head>
 <body>
+<div class="container mt-4">
     <h1>Book Tickets for {{ movie['title'] }}</h1>
     <form method="post">
-        <label for="showtime">Showtime:</label>
-    <select name="showtime" required onchange="this.form.submit()">
-        <option value="">Select a showtime</option>
-        {% for show in showtimes %}
-            <option value="{{ show['id'] }}" {% if show['id'] == request.form.get('showtime', type=int) %}selected{% endif %}>{{ show['time'] }}</option>
-        {% endfor %}
-    </select><br><br>
-    {% if available_seats %}
-        <label>Select Seats (choose {{ request.form.get('tickets', 1) }}):</label><br>
-        {% for seat in available_seats %}
-            <input type="checkbox" name="seats" value="{{ seat['seat_number'] }}"> {{ seat['seat_number'] }}
-            {% if loop.index % 10 == 0 %}<br>{% endif %}
-        {% endfor %}
-        <br>
-    {% endif %}
-        <label for="showtime">Showtime:</label>
-        <select name="showtime" required>
-            {% for show in showtimes %}
-                <option value="{{ show['id'] }}">{{ show['time'] }}</option>
-            {% endfor %}
-        </select><br><br>
-        <label for="tickets">Number of Tickets:</label>
-        <input type="number" name="tickets" min="1" required><br><br>
-        <label for="name">Your Name:</label>
-        <input type="text" name="name" required><br><br>
+        <div class="mb-3">
+            <label for="showtime" class="form-label">Showtime:</label>
+            <select name="showtime" class="form-select" required onchange="this.form.submit()">
+                <option value="">Select a showtime</option>
+                {% for show in showtimes %}
+                    <option value="{{ show['id'] }}" {% if show['id'] == request.form.get('showtime', type=int) %}selected{% endif %}>{{ show['time'] }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="tickets" class="form-label">Number of Tickets:</label>
+            <input type="number" class="form-control" name="tickets" min="1" max="25" value="{{ request.form.get('tickets', 1) }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="name" class="form-label">Your Name:</label>
+            <input type="text" class="form-control" name="name" required>
+        </div>
+        {% if available_seats %}
+        <div class="mb-3">
+            <label class="form-label">Select Seats (choose {{ request.form.get('tickets', 1) }}):</label>
+            <div>
+                <table>
+                {% set seat_map = {} %}
+                {% for seat in available_seats %}
+                    {% set row = seat['seat_number'][0] %}
+                    {% set col = seat['seat_number'][1:] %}
+                    {% if seat_map.setdefault(row, []) is not none %}
+                        {% do seat_map[row].append(seat['seat_number']) %}
+                    {% endif %}
+                {% endfor %}
+                {% for row in ['A','B','C','D','E'] %}
+                    <tr>
+                    {% for col in ['1','2','3','4','5'] %}
+                        {% set seat_label = row ~ col %}
+                        <td>
+                            {% if seat_label in seat_map.get(row, []) %}
+                                <input type="checkbox" class="seat-checkbox" name="seats" value="{{ seat_label }}">
+                                <span class="seat-label">{{ seat_label }}</span>
+                            {% else %}
+                                <span class="seat-label text-muted">{{ seat_label }}</span>
+                            {% endif %}
+                        </td>
+                    {% endfor %}
+                    </tr>
+                {% endfor %}
+                </table>
+            </div>
+        </div>
+        {% endif %}
         <h3>Payment Information</h3>
-        <label for="card_number">Card Number:</label>
-        <input type="text" name="card_number" required><br><br>
-        <label for="card_name">Name on Card:</label>
-        <input type="text" name="card_name" required><br><br>
-        <button type="submit">Pay & Book</button>
+        <div class="mb-3">
+            <label for="card_number" class="form-label">Card Number:</label>
+            <input type="text" class="form-control" name="card_number" required>
+        </div>
+        <div class="mb-3">
+            <label for="card_name" class="form-label">Name on Card:</label>
+            <input type="text" class="form-control" name="card_name" required>
+        </div>
+        <button type="submit" class="btn btn-success">Pay & Book</button>
     </form>
+</div>
 </body>
 </html>
