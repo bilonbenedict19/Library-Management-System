@@ -178,6 +178,18 @@ def book(movie_id):
         return render_template('confirmation.html', movie=movie, showtime_id=showtime_id, tickets=tickets, name=name, paid=paid, seats=selected_seats)
     return render_template('book.html', movie=movie, showtimes=showtimes, available_seats=available_seats)
 
+@app.route('/cancel_booking/<int:booking_id>')
+def cancel_booking(booking_id):
+    conn = get_db_connection()
+    # Free up seats
+    conn.execute('UPDATE seats SET is_booked = 0, booking_id = NULL WHERE booking_id = ?', (booking_id,))
+    # Delete booking
+    conn.execute('DELETE FROM bookings WHERE id = ?', (booking_id,))
+    conn.commit()
+    conn.close()
+    flash('Booking cancelled and seats released.')
+    return redirect(url_for('index'))
+
 @app.route('/showtime/<int:showtime_id>')
 def get_showtime(showtime_id):
     conn = get_db_connection()
