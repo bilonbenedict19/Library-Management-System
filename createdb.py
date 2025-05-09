@@ -44,6 +44,17 @@ CREATE TABLE IF NOT EXISTS bookings (
     FOREIGN KEY(user_id) REFERENCES users(id)
 )
 ''')
+c.execute('''
+CREATE TABLE IF NOT EXISTS seats (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    showtime_id INTEGER,
+    seat_number TEXT,
+    is_booked INTEGER DEFAULT 0,
+    booking_id INTEGER,
+    FOREIGN KEY(showtime_id) REFERENCES showtimes(id),
+    FOREIGN KEY(booking_id) REFERENCES bookings(id)
+)
+''')
 
 # Insert sample data
 c.execute("INSERT INTO movies (title, price) VALUES ('Inception', 10)")
