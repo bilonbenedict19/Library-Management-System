@@ -144,6 +144,12 @@ def book(movie_id):
     conn = get_db_connection()
     movie = conn.execute('SELECT * FROM movies WHERE id = ?', (movie_id,)).fetchone()
     showtimes = conn.execute('SELECT * FROM showtimes WHERE movie_id = ?', (movie_id,)).fetchall()
+    selected_showtime_id = request.form.get('showtime') if request.method == 'POST' else None
+    available_seats = []
+    if selected_showtime_id:
+        available_seats = conn.execute(
+            'SELECT * FROM seats WHERE showtime_id = ? AND is_booked = 0', (selected_showtime_id,)
+        ).fetchall()
     conn.close()
     if request.method == 'POST':
         showtime_id = request.form['showtime']
@@ -151,15 +157,26 @@ def book(movie_id):
         name = request.form['name']
         card_number = request.form['card_number']
         card_name = request.form['card_name']
+        selected_seats = request.form.getlist('seats')
         paid = 1 if card_number and card_name else 0
-        user_id = session.get('user_id')  # None if not logged in
+        user_id = session.get('user_id')
+        if len(selected_seats) != tickets:
+            flash('Number of selected seats must match number of tickets.')
+            return redirect(request.url)
         conn = get_db_connection()
-        conn.execute('INSERT INTO bookings (movie_id, showtime_id, tickets, name, user_id, paid) VALUES (?, ?, ?, ?, ?, ?)',
-                     (movie_id, showtime_id, tickets, name, user_id, paid))
+        # Insert booking
+        cur = conn.cursor()
+        cur.execute('INSERT INTO bookings (movie_id, showtime_id, tickets, name, user_id, paid) VALUES (?, ?, ?, ?, ?, ?)',
+                    (movie_id, showtime_id, tickets, name, user_id, paid))
+        booking_id = cur.lastrowid
+        # Mark seats as booked
+        for seat in selected_seats:
+            cur.execute('UPDATE seats SET is_booked = 1, booking_id = ? WHERE showtime_id = ? AND seat_number = ?',
+                        (booking_id, showtime_id, seat))
         conn.commit()
         conn.close()
-        return render_template('confirmation.html', movie=movie, showtime_id=showtime_id, tickets=tickets, name=name, paid=paid)
-    return render_template('book.html', movie=movie, showtimes=showtimes)
+        return render_template('confirmation.html', movie=movie, showtime_id=showtime_id, tickets=tickets, name=name, paid=paid, seats=selected_seats)
+    return render_template('book.html', movie=movie, showtimes=showtimes, available_seats=available_seats)
 
 @app.route('/showtime/<int:showtime_id>')
 def get_showtime(showtime_id):
