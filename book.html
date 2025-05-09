@@ -12,13 +12,16 @@
 <body>
 <div class="container mt-4">
     <h1>Book Tickets for {{ movie['title'] }}</h1>
+    {% if error_message %}
+        <div class="alert alert-danger">{{ error_message }}</div>
+    {% endif %}
     <form method="post">
         <div class="mb-3">
             <label for="showtime" class="form-label">Showtime:</label>
             <select name="showtime" class="form-select" required onchange="this.form.submit()">
                 <option value="">Select a showtime</option>
                 {% for show in showtimes %}
-                    <option value="{{ show['id'] }}" {% if show['id'] == request.form.get('showtime', type=int) %}selected{% endif %}>{{ show['time'] }}</option>
+                    <option value="{{ show['id'] }}" {% if show['id'] == (request.form.get('showtime')|int) %}selected{% endif %}>{{ show['time'] }}</option>
                 {% endfor %}
             </select>
         </div>
@@ -30,19 +33,11 @@
             <label for="name" class="form-label">Your Name:</label>
             <input type="text" class="form-control" name="name" required>
         </div>
-        {% if available_seats %}
+        {% if available_seats and seat_map %}
         <div class="mb-3">
             <label class="form-label">Select Seats (choose {{ request.form.get('tickets', 1) }}):</label>
             <div>
                 <table>
-                {% set seat_map = {} %}
-                {% for seat in available_seats %}
-                    {% set row = seat['seat_number'][0] %}
-                    {% set col = seat['seat_number'][1:] %}
-                    {% if seat_map.setdefault(row, []) is not none %}
-                        {% do seat_map[row].append(seat['seat_number']) %}
-                    {% endif %}
-                {% endfor %}
                 {% for row in ['A','B','C','D','E'] %}
                     <tr>
                     {% for col in ['1','2','3','4','5'] %}
