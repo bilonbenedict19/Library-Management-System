@@ -2,14 +2,11 @@
 <html>
 <head>
     <title>Booking Confirmation</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Booking Confirmed!</h1>
-    <p>Thank you, {{ name }}.</p>
-    <p>Movie: {{ movie['title'] }}</p>
-    <p>Showtime: {{ get_showtime_time(showtime_id) }}</p>
+    <h1>Booking Confirmation</h1>
+    <p>Thank you, {{ name }}! Your booking for {{ movie['title'] }} is confirmed.</p>
     <p>Tickets: {{ tickets }}</p>
-    <a href="{{ url_for('index') }}">Back to movies</a>
+    <p>Payment Status: {% if paid %}Paid{% else %}Not Paid{% endif %}</p>
 </body>
 </html>
