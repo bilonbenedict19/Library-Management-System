@@ -7,6 +7,21 @@
     <h1>Book Tickets for {{ movie['title'] }}</h1>
     <form method="post">
         <label for="showtime">Showtime:</label>
+    <select name="showtime" required onchange="this.form.submit()">
+        <option value="">Select a showtime</option>
+        {% for show in showtimes %}
+            <option value="{{ show['id'] }}" {% if show['id'] == request.form.get('showtime', type=int) %}selected{% endif %}>{{ show['time'] }}</option>
+        {% endfor %}
+    </select><br><br>
+    {% if available_seats %}
+        <label>Select Seats (choose {{ request.form.get('tickets', 1) }}):</label><br>
+        {% for seat in available_seats %}
+            <input type="checkbox" name="seats" value="{{ seat['seat_number'] }}"> {{ seat['seat_number'] }}
+            {% if loop.index % 10 == 0 %}<br>{% endif %}
+        {% endfor %}
+        <br>
+    {% endif %}
+        <label for="showtime">Showtime:</label>
         <select name="showtime" required>
             {% for show in showtimes %}
                 <option value="{{ show['id'] }}">{{ show['time'] }}</option>
