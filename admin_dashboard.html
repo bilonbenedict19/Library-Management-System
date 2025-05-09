@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard</title>
+</head>
+<body>
+    <h1>Admin Dashboard</h1>
+    <h2>Movies</h2>
+    <a href="{{ url_for('add_movie') }}">Add Movie</a>
+    <ul>
+        {% for movie in movies %}
+            <li>
+                {{ movie['title'] }} (₱{{ movie['price'] }})
+                <a href="{{ url_for('edit_movie', movie_id=movie['id']) }}">Edit</a>
+                <a href="{{ url_for('delete_movie', movie_id=movie['id']) }}">Delete</a>
+                <ul>
+                    <li>Showtimes:
+                        <ul>
+                        {% for show in showtimes %}
+                            {% if show['movie_id'] == movie['id'] %}
+                                <li>
+                                    {{ show['time'] }}
+                                    <a href="{{ url_for('delete_showtime', showtime_id=show['id']) }}">Delete</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        </ul>
+                        <a href="{{ url_for('add_showtime', movie_id=movie['id']) }}">Add Showtime</a>
+                    </li>
+                </ul>
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
