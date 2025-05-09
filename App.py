@@ -4,13 +4,14 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 import sqlite3
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'  # Needed for session/flash
+app.secret_key = 'your_secret_key'  # Change this in production!
 
 def get_db_connection():
     conn = sqlite3.connect('movies.db')
     conn.row_factory = sqlite3.Row
     return conn
 
+# --- Authentication Routes ---
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -19,7 +20,7 @@ def login():
     conn = get_db_connection()
     user = conn.execute('SELECT * FROM users WHERE username = ?', (username,)).fetchone()
     conn.close()
-    if user and user['password'] == password:  # For demo; use hash in production!
+    if user and check_password_hash(user['password'], password):
         session['user_id'] = user['id']
         session['username'] = user['username']
         session['role'] = user['role']
@@ -38,8 +39,8 @@ def signup():
         flash('Username already exists.')
         conn.close()
         return redirect(url_for('index'))
-    # For demo, store plain password; use hash in production!
-    conn.execute('INSERT INTO users (username, password) VALUES (?, ?)', (username, password))
+    password_hash = generate_password_hash(password)
+    conn.execute('INSERT INTO users (username, password) VALUES (?, ?)', (username, password_hash))
     conn.commit()
     conn.close()
     flash('Account created! Please log in.')
@@ -50,14 +51,19 @@ def logout():
     session.clear()
     flash('Logged out.')
     return redirect(url_for('index'))
+
+# --- Admin Decorator ---
+
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session or session.get('role') != 'admin':
             flash('Admin access required.')
-            return redirect(url_for('login'))
+            return redirect(url_for('index'))
         return f(*args, **kwargs)
     return decorated_function
+
+# --- Admin Routes ---
 
 @app.route('/admin')
 @admin_required
@@ -126,6 +132,8 @@ def delete_showtime(showtime_id):
     conn.commit()
     conn.close()
     return redirect(url_for('admin_dashboard'))
+
+# --- Main User Routes ---
 
 @app.route('/')
 def index():
