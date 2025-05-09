@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Movie</title>
+</head>
+<body>
+    <h1>Edit Movie</h1>
+    <form method="post">
+        <label>Title:</label>
+        <input type="text" name="title" value="{{ movie['title'] }}" required><br>
+        <label>Price:</label>
+        <input type="number" name="price" value="{{ movie['price'] }}" required><br>
+        <button type="submit">Update Movie</button>
+    </form>
+</body>
+</html>
