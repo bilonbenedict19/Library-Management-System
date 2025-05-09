@@ -1,16 +1,25 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Add Movie</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
 <body>
+<div class="container mt-4">
     <h1>Add Movie</h1>
     <form method="post">
-        <label>Title:</label>
-        <input type="text" name="title" required><br>
-        <label>Price:</label>
-        <input type="number" name="price" required><br>
-        <button type="submit">Add Movie</button>
+        <div class="mb-3">
+            <label class="form-label">Title:</label>
+            <input type="text" class="form-control" name="title" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Price:</label>
+            <input type="number" class="form-control" name="price" required>
+        </div>
+        <button type="submit" class="btn btn-success">Add Movie</button>
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">Cancel</a>
     </form>
+</div>
 </body>
 </html>
