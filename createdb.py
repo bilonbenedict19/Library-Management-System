@@ -56,6 +56,15 @@ CREATE TABLE IF NOT EXISTS seats (
 )
 ''')
 
+showtime_ids = [row[0] for row in c.execute('SELECT id FROM showtimes').fetchall()]
+seat_rows = ['A', 'B', 'C', 'D']
+seat_numbers = [str(i) for i in range(1, 11)]
+for showtime_id in showtime_ids:
+    for row in seat_rows:
+        for num in seat_numbers:
+            seat = f"{row}{num}"
+            c.execute("INSERT INTO seats (showtime_id, seat_number) VALUES (?, ?)", (showtime_id, seat))
+
 # Insert sample data
 c.execute("INSERT INTO movies (title, price) VALUES ('Inception', 10)")
 c.execute("INSERT INTO movies (title, price) VALUES ('The Matrix', 12)")
