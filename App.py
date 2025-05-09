@@ -1,4 +1,5 @@
 from functools import wraps
+from werkzeug.security import generate_password_hash, check_password_hash
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 import sqlite3
 
@@ -10,6 +11,45 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
+
+@app.route('/login', methods=['POST'])
+def login():
+    username = request.form['login_username']
+    password = request.form['login_password']
+    conn = get_db_connection()
+    user = conn.execute('SELECT * FROM users WHERE username = ?', (username,)).fetchone()
+    conn.close()
+    if user and user['password'] == password:  # For demo; use hash in production!
+        session['user_id'] = user['id']
+        session['username'] = user['username']
+        session['role'] = user['role']
+        flash('Logged in successfully!')
+    else:
+        flash('Invalid username or password.')
+    return redirect(url_for('index'))
+
+@app.route('/signup', methods=['POST'])
+def signup():
+    username = request.form['signup_username']
+    password = request.form['signup_password']
+    conn = get_db_connection()
+    existing = conn.execute('SELECT * FROM users WHERE username = ?', (username,)).fetchone()
+    if existing:
+        flash('Username already exists.')
+        conn.close()
+        return redirect(url_for('index'))
+    # For demo, store plain password; use hash in production!
+    conn.execute('INSERT INTO users (username, password) VALUES (?, ?)', (username, password))
+    conn.commit()
+    conn.close()
+    flash('Account created! Please log in.')
+    return redirect(url_for('index'))
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    flash('Logged out.')
+    return redirect(url_for('index'))
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
