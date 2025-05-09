@@ -1,4 +1,5 @@
 import sqlite3
+from werkzeug.security import generate_password_hash
 
 conn = sqlite3.connect('movies.db')
 c = conn.cursor()
@@ -44,6 +45,7 @@ CREATE TABLE IF NOT EXISTS bookings (
     FOREIGN KEY(user_id) REFERENCES users(id)
 )
 ''')
+
 c.execute('''
 CREATE TABLE IF NOT EXISTS seats (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -55,15 +57,6 @@ CREATE TABLE IF NOT EXISTS seats (
     FOREIGN KEY(booking_id) REFERENCES bookings(id)
 )
 ''')
-
-showtime_ids = [row[0] for row in c.execute('SELECT id FROM showtimes').fetchall()]
-seat_rows = ['A', 'B', 'C', 'D']
-seat_numbers = [str(i) for i in range(1, 11)]
-for showtime_id in showtime_ids:
-    for row in seat_rows:
-        for num in seat_numbers:
-            seat = f"{row}{num}"
-            c.execute("INSERT INTO seats (showtime_id, seat_number) VALUES (?, ?)", (showtime_id, seat))
 
 # Insert sample data
 c.execute("INSERT INTO movies (title, price) VALUES ('Inception', 10)")
@@ -80,8 +73,19 @@ c.execute("INSERT INTO showtimes (movie_id, time) VALUES (3, '12:00 PM')")
 c.execute("INSERT INTO showtimes (movie_id, time) VALUES (3, '3:00 PM')")
 c.execute("INSERT INTO showtimes (movie_id, time) VALUES (3, '6:00 PM')")
 
-# Insert a sample admin user (username: admin, password: admin, role: admin)
-c.execute("INSERT OR IGNORE INTO users (username, password, role) VALUES ('admin', 'admin', 'admin')")
+# 5x5 seat grid: A1–A5, B1–B5, ..., E1–E5 for each showtime
+showtime_ids = [row[0] for row in c.execute('SELECT id FROM showtimes').fetchall()]
+seat_rows = ['A', 'B', 'C', 'D', 'E']
+seat_numbers = [str(i) for i in range(1, 6)]
+for showtime_id in showtime_ids:
+    for row in seat_rows:
+        for num in seat_numbers:
+            seat = f"{row}{num}"
+            c.execute("INSERT INTO seats (showtime_id, seat_number) VALUES (?, ?)", (showtime_id, seat))
+
+# Insert a sample admin user (username: admin, password: admin, role: admin) with hashed password
+admin_password_hash = generate_password_hash('admin')
+c.execute("INSERT OR IGNORE INTO users (username, password, role) VALUES (?, ?, ?)", ('admin', admin_password_hash, 'admin'))
 
 conn.commit()
 conn.close()
