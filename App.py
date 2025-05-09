@@ -149,17 +149,26 @@ def index():
 
 @app.route('/book/<int:movie_id>', methods=['GET', 'POST'])
 def book(movie_id):
+    error_message = None  # For seat/ticket mismatch
+
     conn = get_db_connection()
     movie = conn.execute('SELECT * FROM movies WHERE id = ?', (movie_id,)).fetchone()
     showtimes = conn.execute('SELECT * FROM showtimes WHERE movie_id = ?', (movie_id,)).fetchall()
     selected_showtime_id = request.form.get('showtime') if request.method == 'POST' else None
     available_seats = []
+    seat_map = {}
+
+    # If a showtime is selected, fetch available seats and build seat_map
     if selected_showtime_id:
         available_seats = conn.execute(
             'SELECT * FROM seats WHERE showtime_id = ? AND is_booked = 0', (selected_showtime_id,)
         ).fetchall()
+        for seat in available_seats:
+            row = seat['seat_number'][0]
+            seat_map.setdefault(row, []).append(seat['seat_number'])
     conn.close()
-    if request.method == 'POST':
+
+    if request.method == 'POST' and selected_showtime_id:
         showtime_id = request.form['showtime']
         tickets = int(request.form['tickets'])
         name = request.form['name']
@@ -169,8 +178,15 @@ def book(movie_id):
         paid = 1 if card_number and card_name else 0
         user_id = session.get('user_id')
         if len(selected_seats) != tickets:
-            flash('Number of selected seats must match number of tickets.')
-            return redirect(request.url)
+            error_message = "Number of seats must be the same as number of tickets."
+            return render_template(
+                'book.html',
+                movie=movie,
+                showtimes=showtimes,
+                available_seats=available_seats,
+                seat_map=seat_map,
+                error_message=error_message
+            )
         conn = get_db_connection()
         # Insert booking
         cur = conn.cursor()
@@ -183,9 +199,24 @@ def book(movie_id):
                         (booking_id, showtime_id, seat))
         conn.commit()
         conn.close()
-        return render_template('confirmation.html', movie=movie, showtime_id=showtime_id, tickets=tickets, name=name, paid=paid, seats=selected_seats)
-    return render_template('book.html', movie=movie, showtimes=showtimes, available_seats=available_seats)
+        return render_template(
+            'confirmation.html',
+            movie=movie,
+            showtime_id=showtime_id,
+            tickets=tickets,
+            name=name,
+            paid=paid,
+            seats=selected_seats
+        )
 
+    return render_template(
+        'book.html',
+        movie=movie,
+        showtimes=showtimes,
+        available_seats=available_seats,
+        seat_map=seat_map,
+        error_message=error_message
+    )
 @app.route('/cancel_booking/<int:booking_id>')
 def cancel_booking(booking_id):
     conn = get_db_connection()
