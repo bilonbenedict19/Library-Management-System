@@ -1,15 +1,14 @@
 from functools import wraps
-from flask import Flask, render_template, request, redirect, url_for
-
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 import sqlite3
 
 app = Flask(__name__)
+app.secret_key = 'your_secret_key'  # Needed for session/flash
 
 def get_db_connection():
     conn = sqlite3.connect('movies.db')
     conn.row_factory = sqlite3.Row
     return conn
-
 
 def admin_required(f):
     @wraps(f)
@@ -87,6 +86,7 @@ def delete_showtime(showtime_id):
     conn.commit()
     conn.close()
     return redirect(url_for('admin_dashboard'))
+
 @app.route('/')
 def index():
     conn = get_db_connection()
@@ -110,17 +110,15 @@ def book(movie_id):
         tickets = int(request.form['tickets'])
         name = request.form['name']
         card_number = request.form['card_number']
-    card_name = request.form['card_name']
-    if card_number and card_name:
-        paid = 1
-    else:
-        paid = 0
-    conn = get_db_connection()
-    conn.execute('INSERT INTO bookings (movie_id, showtime_id, tickets, name, user_id, paid) VALUES (?, ?, ?, ?, ?, ?)',
-                 (movie_id, showtime_id, tickets, name, session.get('user_id'), paid))
-    conn.commit()
-    conn.close()
-        return render_template('confirmation.html', movie=movie, showtime_id=showtime_id, tickets=tickets, name=name)
+        card_name = request.form['card_name']
+        paid = 1 if card_number and card_name else 0
+        user_id = session.get('user_id')  # None if not logged in
+        conn = get_db_connection()
+        conn.execute('INSERT INTO bookings (movie_id, showtime_id, tickets, name, user_id, paid) VALUES (?, ?, ?, ?, ?, ?)',
+                     (movie_id, showtime_id, tickets, name, user_id, paid))
+        conn.commit()
+        conn.close()
+        return render_template('confirmation.html', movie=movie, showtime_id=showtime_id, tickets=tickets, name=name, paid=paid)
     return render_template('book.html', movie=movie, showtimes=showtimes)
 
 @app.route('/showtime/<int:showtime_id>')
