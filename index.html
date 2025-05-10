@@ -67,7 +67,11 @@
                             <li>{{ show['time'] }}</li>
                         {% endfor %}
                     </ul>
-                    <a href="{{ url_for('book', movie_id=movie['id']) }}" class="btn btn-primary">Book</a>
+                    {% if session.get('user_id') %}
+                        <a href="{{ url_for('book', movie_id=movie['id']) }}" class="btn btn-primary">Book</a>
+                    {% else %}
+                        <button class="btn btn-secondary" disabled>Login to Book</button>
+                    {% endif %}
                 </div>
             </div>
         </div>
