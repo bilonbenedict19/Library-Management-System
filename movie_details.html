@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+{% set badge_bg = '#888' %}
+{% set badge_color = '#fff' %}
+{% if movie['rating'] == 'PG' %}
+  {% set badge_bg = '#0096ff' %}
+{% elif movie['rating'] == 'G' %}
+  {% set badge_bg = '#00ff2a' %}
+{% elif movie['rating'] == 'R-13' %}
+  {% set badge_bg = '#ffd600' %}
+  {% set badge_color = '#222' %}
+{% elif movie['rating'] == 'R-16' %}
+  {% set badge_bg = '#ff9100' %}
+{% elif movie['rating'] == 'R-18' %}
+  {% set badge_bg = '#ff1a1a' %}
+{% endif %}
+{% set half = (showtimes|length // 2) + (showtimes|length % 2) %}
+{% set showtimes_col1 = showtimes[:half] %}
+{% set showtimes_col2 = showtimes[half:] %}
+<head>
+    <meta charset="UTF-8">
+    <title>{{ movie['title'] }} - Details</title>
+    <link href="https://fonts.googleapis.com/css?family=Inter:400,700&display=swap" rel="stylesheet">
+    <style>
+        body { background: #f9f4f3; font-family: 'Inter', sans-serif; margin: 0; }
+        .cornhub-header { background: #fd0000; padding: 0 0 0 32px; height: 90px; display: flex; align-items: center; gap: 18px; }
+        .cornhub-logo { height: 60px; }
+        .cornhub-title { font-size: 2.2rem; font-weight: bold; color: #222; letter-spacing: 1px; }
+        .cornhub-title span { color: #f7b731; }
+        .details-main { display: flex; gap: 40px; max-width: 1300px; margin: 40px auto 0 auto; }
+        .details-left { flex: 1; display: flex; flex-direction: column; align-items: flex-start; }
+        .details-badge { font-weight: bold; font-size: 2rem; border-radius: 32px; padding: 24px 48px; margin-bottom: 18px; margin-left: 16px; }
+        .details-genre { font-size: 1.2rem; margin-bottom: 18px; margin-left: 16px; }
+        .details-genre span { font-weight: bold; color: #222; }
+        .genre-action { color: #ff3c3c; }
+        .genre-adventure { color: #0096ff; }
+        .genre-scifi { color: #00c853; }
+        .details-poster { width: 340px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.10); margin-left: 16px; }
+        .details-right { flex: 2; display: flex; flex-direction: column; }
+        .details-title { font-size: 2.2rem; font-weight: bold; margin-bottom: 12px; }
+        .details-desc { font-size: 1.15rem; margin-bottom: 24px; max-width: 500px; }
+        .details-gallery-box { background: #111; border-radius: 8px; padding: 18px; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+        .details-gallery-box img { width: 100%; height: 120px; object-fit: cover; border-radius: 8px; }
+        .details-gallery-box img:first-child { grid-column: 1 / 3; }
+        .showtimes-row { display: flex; gap: 80px; margin: 32px 0 0 0; }
+        .showtime-col { display: flex; flex-direction: column; align-items: flex-start; }
+        .showtime-date { font-weight: bold; font-size: 1.1rem; margin-bottom: 8px; }
+        .showtime-list { list-style: none; padding: 0; margin: 0; font-size: 1rem; display: flex; flex-direction: column; gap: 12px; font-weight: bold; }
+        .showtime-badge { border-radius: 12px; padding: 8px 22px; font-size: 1.1rem; font-weight: bold; background: #e0e0e0; margin-right: 12px; }
+        .see-seats-btn { background: #3a3a4a; color: #fff; border: none; border-radius: 8px; padding: 7px 18px; font-size: 1rem; font-weight: bold; cursor: pointer; }
+        .book-btn { background: #fd0000; color: #fff; border: none; border-radius: 20px; padding: 28px 48px; font-size: 2rem; font-weight: bold; cursor: pointer; margin-left: 32px; }
+        .book-btn:disabled { background: #bdbdbd; color: #fff; cursor: not-allowed; }
+        .auth-btns { display: flex; gap: 16px; margin-top: 24px; }
+        .auth-btn { background: #fff; color: #fd0000; border: none; border-radius: 16px; padding: 10px 32px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: background 0.2s, color 0.2s; }
+        .auth-btn:hover { background: #fd0000; color: #fff; }
+    </style>
+</head>
+<body>
+    <div class="cornhub-header">
+        <img src="{{ url_for('static', filename='cornhub-logo.png') }}" class="cornhub-logo" alt="CornHub Logo">
+        <div class="cornhub-title">Corn<span>Hub</span></div>
+        <div style="flex:1"></div>
+        {% if not session.get('user_id') %}
+            <button id="cornhub-login-btn" style="margin-right:12px; background:#fff; color:#fd0000; font-weight:bold; border-radius:16px; padding:10px 28px; font-size:1.1rem; border:2px solid #fd0000; cursor:pointer;">Login</button>
+            <button id="cornhub-signup-btn" style="margin-right:32px; background:#fd0000; color:#fff; font-weight:bold; border-radius:16px; padding:10px 28px; font-size:1.1rem; border:none; cursor:pointer;">Sign Up</button>
+        {% endif %}
+    </div>
+
+    <a href="{{ url_for('index') }}" style="display: inline-block; margin: 32px 0 0 48px; background: #e0e0e0; color: #222; font-weight: bold; border-radius: 16px; padding: 12px 36px; font-size: 1.1rem; border: none; text-decoration: none; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: background 0.2s;">&larr; Return</a>
+
+    <div class="details-main" style="display: flex; gap: 40px; max-width: 1300px; margin: 40px auto 0 auto; align-items: flex-start;">
+        <!-- Left Column -->
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: flex-start;">
+            <div style="background: {{ badge_bg }}; color: {{ badge_color }}; font-weight: bold; font-size: 2rem; border-radius: 32px; padding: 24px 48px; margin-bottom: 18px; margin-left: 16px;">{{ movie['rating'] }}</div>
+            <div style="font-size: 1.2rem; margin-bottom: 18px; margin-left: 16px;">
+                <span style="font-weight: bold; color: #222;">GENRE:</span>
+                <span style="color: #ff3c3c;">Action</span>,
+                <span style="color: #0096ff;">Adventure</span>,
+                <span style="color: #00c853;">Sci-Fi</span>
+            </div>
+            <img src="{{ movie['poster_url'] or 'https://via.placeholder.com/320x480?text=Poster' }}" style="width: 340px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.10); margin-left: 16px;" alt="{{ movie['title'] }} poster" />
+        </div>
+        <!-- Center/Right Column -->
+        <div style="flex: 2; display: flex; flex-direction: column; gap: 0;">
+            <div style="display: flex; gap: 40px; align-items: flex-start;">
+                <div style="flex: 1;">
+                    <div style="font-size: 2.2rem; font-weight: bold; margin-bottom: 12px;">{{ movie['title'] }}</div>
+                    <div style="font-size: 1.15rem; margin-bottom: 24px; max-width: 500px;">{{ movie['description'] or 'No description available.' }}</div>
+                </div>
+                <div style="flex: 1.2; background: #111; border-radius: 8px; padding: 18px; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 12px; min-width: 400px; min-height: 220px;">
+                    <img src="https://i.imgur.com/1.jpg" style="width: 100%; height: 120px; object-fit: cover; border-radius: 8px; grid-column: 1 / 3;" />
+                    <img src="https://i.imgur.com/2.jpg" style="width: 100%; height: 120px; object-fit: cover; border-radius: 8px;" />
+                    <img src="https://i.imgur.com/3.jpg" style="width: 100%; height: 120px; object-fit: cover; border-radius: 8px;" />
+                </div>
+            </div>
+            <!-- Showtimes -->
+            <div style="display: flex; gap: 160px; align-items: flex-start; position: relative; min-height: 320px;">
+                <div>
+                    <div style="font-weight: bold; font-size: 1.2rem; color: #3a3a4a; margin-bottom: 2px; letter-spacing: 1px;">Cinema 1</div>
+                    <div style="font-weight: bold; font-size: 1.1rem; margin-bottom: 8px;">THURSDAY, 22 MAY 2025</div>
+                    <ul style="list-style: none; padding: 0; margin: 0; font-size: 1rem; display: flex; flex-direction: column; gap: 12px; font-weight: bold;">
+                        {% for show in showtimes_col1 %}
+                            <li>
+                                <span style="border-radius: 12px; padding: 8px 22px; font-size: 1.1rem; font-weight: bold; background: #b2ffb2; color: #222; margin-right: 12px;">
+                                    {{ show['time'] }}
+                                </span>
+                                <button
+                                    class="see-seats-btn"
+                                    onclick="showSeatPreview({{ show['id'] }}, '{{ movie['poster_url'] }}', 'THURSDAY, 22 MAY 2025', '{{ show['time'] }}', 'Cinema 1')"
+                                >See available seats</button>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div>
+                    <div style="font-weight: bold; font-size: 1.2rem; color: #3a3a4a; margin-bottom: 2px; letter-spacing: 1px;">Cinema 2</div>
+                    <div style="font-weight: bold; font-size: 1.1rem; margin-bottom: 8px;">THURSDAY, 22 MAY 2025</div>
+                    <ul style="list-style: none; padding: 0; margin: 0; font-size: 1rem; display: flex; flex-direction: column; gap: 12px; font-weight: bold;">
+                        {% for show in showtimes_col2 %}
+                            <li>
+                                <span style="border-radius: 12px; padding: 8px 22px; font-size: 1.1rem; font-weight: bold; background: #b2ffb2; color: #222; margin-right: 12px;">
+                                    {{ show['time'] }}
+                                </span>
+                                <button
+                                    class="see-seats-btn"
+                                    onclick="showSeatPreview({{ show['id'] }}, '{{ movie['poster_url'] }}', 'THURSDAY, 22 MAY 2025', '{{ show['time'] }}', 'Cinema 2')"
+                                >See available seats</button>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div style="position: absolute; right: 0; bottom: 0; display: flex; align-items: flex-end;">
+                    {% if not session.get('user_id') %}
+                        <button class="book-btn" disabled style="background: #fd0000; color: #fff; border: none; border-radius: 20px; padding: 28px 48px; font-size: 2rem; font-weight: bold; cursor: not-allowed; margin-left: 32px;">BOOK NOW!</button>
+                        <div style="margin-top: 12px; color: #fd0000; font-weight: bold; font-size: 1.1rem; text-align: center; width: 100%;">You must be logged in to book tickets.</div>
+                    {% else %}
+                        <form method="get" action="{{ url_for('book', movie_id=movie['id']) }}">
+                            <button class="book-btn" style="background: #fd0000; color: #fff; border: none; border-radius: 20px; padding: 28px 48px; font-size: 2rem; font-weight: bold; cursor: pointer; margin-left: 32px;">BOOK NOW!</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Figma-Inspired Auth Modal -->
+    <div id="figma-auth-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.25); z-index:1000; align-items:center; justify-content:center;">
+      <div style="position:relative; width:700px; min-height:400px; background:#e6e6e6; border-radius:24px; display:flex; box-shadow:0 8px 32px rgba(0,0,0,0.10); overflow:hidden;">
+        <!-- Decorative shapes -->
+        <div style="position:absolute; left:0; bottom:0; width:220px; height:120px; background:#fd0000; border-radius:60px 60px 120px 120px; z-index:1;"></div>
+        <div style="position:absolute; left:0; top:0; width:180px; height:100px; background:#2ec4b6; border-radius:0 0 100px 100px; z-index:1;"></div>
+        <div style="position:absolute; right:40px; top:0; width:200px; height:100px; background:#b48b8b; border-radius:0 0 100px 100px; z-index:1;"></div>
+        <!-- Content -->
+        <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 24px; z-index:2;">
+          <img src="{{ url_for('static', filename='cornhub-logo.png') }}" style="width:80px; margin-bottom:16px;">
+          <div style="font-size:2rem; font-weight:bold; color:#222; letter-spacing:1px;">Corn<span style="color:#f7b731;">Hub</span></div>
+        </div>
+        <div style="flex:1.2; display:flex; flex-direction:column; justify-content:center; padding:40px 32px; z-index:2;">
+          <div id="auth-modal-title" style="font-size:1.5rem; font-weight:bold; margin-bottom:8px;">Welcome!<br>Sign in to your account</div>
+          <form id="auth-login-form" method="post" action="{{ url_for('login', next=request.url) }}">
+            <input type="hidden" name="next" value="{{ request.url }}">
+            <input type="text" name="login_username" placeholder="Username" required style="width:100%; padding:12px 16px; border-radius:20px; border:none; margin-bottom:16px; font-size:1rem; background:#fff; outline:none;">
+            <input type="password" name="login_password" placeholder="Password" required style="width:100%; padding:12px 16px; border-radius:20px; border:none; margin-bottom:16px; font-size:1rem; background:#fff; outline:none;">
+            <div style="display:flex; gap:16px; margin-top:8px;">
+              <button type="submit" style="flex:1; padding:10px 0; border-radius:20px; border:none; font-weight:bold; font-size:1rem; cursor:pointer; background:#fd0000; color:#fff;">Sign In</button>
+              <button type="button" onclick="showSignup()" style="flex:1; padding:10px 0; border-radius:20px; border:2px solid #fd0000; font-weight:bold; font-size:1rem; background:#fff; color:#fd0000; text-align:center;">Sign Up</button>
+            </div>
+          </form>
+          <form id="auth-signup-form" method="post" action="{{ url_for('signup', next=request.url) }}" style="display:none;">
+            <input type="hidden" name="next" value="{{ request.url }}">
+            <input type="text" name="signup_username" placeholder="Username" required style="width:100%; padding:12px 16px; border-radius:20px; border:none; margin-bottom:16px; font-size:1rem; background:#fff; outline:none;">
+            <input type="password" name="signup_password" placeholder="Password" required style="width:100%; padding:12px 16px; border-radius:20px; border:none; margin-bottom:16px; font-size:1rem; background:#fff; outline:none;">
+            <div style="display:flex; gap:16px; margin-top:8px;">
+              <button type="submit" style="flex:1; padding:10px 0; border-radius:20px; border:none; font-weight:bold; font-size:1rem; cursor:pointer; background:#f7b731; color:#222;">Sign Up</button>
+              <button type="button" onclick="showLogin()" style="flex:1; padding:10px 0; border-radius:20px; border:2px solid #f7b731; font-weight:bold; font-size:1rem; background:#fff; color:#f7b731; text-align:center;">Sign In</button>
+            </div>
+          </form>
+          <button onclick="closeAuthModal()" style="position:absolute; top:18px; right:24px; background:none; border:none; font-size:2rem; color:#888; cursor:pointer; z-index:3;">&times;</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Seat Preview Modal -->
+    <div id="seat-preview-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:#181818ee; z-index:2000; align-items:center; justify-content:center;">
+      <div style="background:#181818; border-radius:20px; padding:32px 48px; min-width:900px; min-height:500px; box-shadow:0 8px 32px rgba(0,0,0,0.10); position:relative; display:flex; flex-direction:row; gap:48px;">
+        <button onclick="closeSeatPreview()" style="position:absolute; top:18px; right:24px; background:#5a4e7c; color:#fff; border:none; border-radius:20px; font-size:1.1rem; padding:8px 24px; cursor:pointer;">&larr; Return</button>
+        <div>
+          <img id="seat-preview-poster" src="" style="width:300px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.10); margin-bottom:24px;">
+        </div>
+        <div style="flex:1;">
+          <div id="seat-preview-grid" style="margin-bottom:32px;"></div>
+          <div style="color:#fff; text-align:center; font-size:2rem; font-weight:bold;">SEATS PREVIEW</div>
+        </div>
+        <div style="display:flex; flex-direction:column; justify-content:center; align-items:flex-end; min-width:220px;">
+          <div style="color:#fff; font-weight:bold; font-size:1.1rem; margin-bottom:8px;" id="seat-preview-cinema"></div>
+          <div style="color:#fff; font-weight:bold; font-size:1.1rem; margin-bottom:8px;" id="seat-preview-date"></div>
+          <div style="color:#fff; font-size:1.2rem;" id="seat-preview-time"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+    function openAuthModal(mode) {
+      document.getElementById('figma-auth-modal').style.display = 'flex';
+      if (mode === 'signup') {
+        showSignup();
+      } else {
+        showLogin();
+      }
+    }
+    function closeAuthModal() {
+      document.getElementById('figma-auth-modal').style.display = 'none';
+    }
+    function showSignup() {
+      document.getElementById('auth-login-form').style.display = 'none';
+      document.getElementById('auth-signup-form').style.display = 'block';
+      document.getElementById('auth-modal-title').innerHTML = 'Create your account';
+    }
+    function showLogin() {
+      document.getElementById('auth-login-form').style.display = 'block';
+      document.getElementById('auth-signup-form').style.display = 'none';
+      document.getElementById('auth-modal-title').innerHTML = 'Welcome!<br>Sign in to your account';
+    }
+    // Attach to header buttons
+    window.addEventListener('DOMContentLoaded', function() {
+      var loginBtn = document.getElementById('cornhub-login-btn');
+      var signupBtn = document.getElementById('cornhub-signup-btn');
+      if (loginBtn) loginBtn.onclick = function() { openAuthModal('login'); };
+      if (signupBtn) signupBtn.onclick = function() { openAuthModal('signup'); };
+    });
+    function showSeatPreview(showtimeId, posterUrl, date, time, cinema) {
+      fetch(`/showtime/${showtimeId}/seats`)
+        .then(response => response.json())
+        .then(data => {
+          const seatMap = data.seats;
+          // Group seats by row (A, B, C, etc.)
+          const rows = {};
+          seatMap.forEach(seat => {
+            const row = seat.seat_number[0];
+            if (!rows[row]) rows[row] = {};
+            rows[row][parseInt(seat.seat_number.slice(1))] = seat;
+          });
+          // Render seat grid: A1-A10, aisle after 5
+          let html = '<div style="display:flex; flex-direction:column; gap:18px;">';
+          const rowLabels = ['A','B','C','D','E'];
+          for (const row of rowLabels) {
+            html += '<div style="display:flex; gap:18px; justify-content:center;">';
+            for (let i = 1; i <= 10; i++) {
+              if (i === 6) html += '<div style="width:40px"></div>'; // aisle
+              const seat = rows[row] && rows[row][i] ? rows[row][i] : {seat_number: row + i, is_booked: false};
+              html += `<span style="display:inline-block; min-width:48px; text-align:center; padding:10px 0; border-radius:16px; background:${seat.is_booked ? '#333' : '#181818'}; color:#ffc94b; font-weight:bold; font-size:1.3rem; border:2px solid #ffc94b; margin:0 2px; opacity:${seat.is_booked ? 0.3 : 1};">${seat.seat_number}</span>`;
+            }
+            html += '</div>';
+          }
+          html += '</div>';
+          document.getElementById('seat-preview-grid').innerHTML = html;
+          document.getElementById('seat-preview-modal').style.display = 'flex';
+          document.getElementById('seat-preview-poster').src = posterUrl;
+          document.getElementById('seat-preview-cinema').textContent = cinema;
+          document.getElementById('seat-preview-date').textContent = date;
+          document.getElementById('seat-preview-time').textContent = time;
+        });
+    }
+    function closeSeatPreview() {
+      document.getElementById('seat-preview-modal').style.display = 'none';
+    }
+    </script>
+</body>
+</html> 
