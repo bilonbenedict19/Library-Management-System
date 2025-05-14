@@ -3,38 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <title>Admin Dashboard</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Inter:400,700&display=swap" rel="stylesheet">
+    <style>
+        body { background: #f9f4f3; font-family: 'Inter', sans-serif; margin: 0; }
+        .cornhub-header {
+            background: #fd0000;
+            padding: 0 0 0 32px;
+            height: 90px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+        .cornhub-logo { height: 60px; }
+        .cornhub-title { font-size: 2.2rem; font-weight: bold; color: #222; letter-spacing: 1px; }
+        .cornhub-title span { color: #f7b731; }
+        .figma-admin-section { margin: 48px auto; max-width: 900px; }
+        .figma-admin-title { font-size: 2rem; font-weight: bold; margin-bottom: 24px; color: #fd0000; letter-spacing: 1px; }
+        .figma-admin-card { background: #fff; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); padding: 24px; margin-bottom: 24px; }
+        .figma-admin-btn, .figma-admin-btn-sm {
+            background: #fd0000;
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 8px 24px;
+            font-weight: bold;
+            margin-right: 8px;
+            font-size: 1rem;
+            transition: background 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .figma-admin-btn:hover, .figma-admin-btn-sm:hover { background: #f7b731; color: #222; }
+        .figma-admin-btn-sm { padding: 6px 16px; font-size: 0.95rem; margin-top: 2px; }
+        .figma-admin-list { list-style: none; padding: 0; }
+        .figma-admin-movie { background: #e0e0e0; border-radius: 12px; margin-bottom: 18px; padding: 18px 18px 12px 18px; }
+        .figma-admin-showtime { background: #fff; border-radius: 8px; display: inline-block; margin: 4px 8px 4px 0; padding: 6px 14px; font-size: 1rem; }
+    </style>
 </head>
 <body>
-<div class="container mt-4">
-    <h1>Admin Dashboard</h1>
-    <a href="{{ url_for('add_movie') }}" class="btn btn-success mb-3">Add Movie</a>
-    <a href="{{ url_for('index') }}" class="btn btn-secondary mb-3">Back to Home</a>
-    <h2>Movies</h2>
-    <ul class="list-group">
-        {% for movie in movies %}
-            <li class="list-group-item">
-                <strong>{{ movie['title'] }}</strong> (₱{{ movie['price'] }})
-                <a href="{{ url_for('edit_movie', movie_id=movie['id']) }}" class="btn btn-sm btn-warning ms-2">Edit</a>
-                <a href="{{ url_for('delete_movie', movie_id=movie['id']) }}" class="btn btn-sm btn-danger ms-2">Delete</a>
-                <ul>
-                    <li>Showtimes:
-                        <ul>
-                        {% for show in showtimes %}
-                            {% if show['movie_id'] == movie['id'] %}
-                                <li>
-                                    {{ show['time'] }}
-                                    <a href="{{ url_for('delete_showtime', showtime_id=show['id']) }}" class="btn btn-sm btn-danger ms-2">Delete</a>
-                                </li>
-                            {% endif %}
-                        {% endfor %}
-                        </ul>
-                        <a href="{{ url_for('add_showtime', movie_id=movie['id']) }}" class="btn btn-sm btn-success mt-1">Add Showtime</a>
+    <div class="cornhub-header">
+        <img src="{{ url_for('static', filename='cornhub-logo.png') }}" class="cornhub-logo" alt="CornHub Logo">
+        <div class="cornhub-title">Corn<span>Hub</span></div>
+    </div>
+    <div class="figma-admin-section">
+        <div class="figma-admin-title">Admin Dashboard</div>
+        <a href="{{ url_for('add_movie') }}" class="figma-admin-btn">Add Movie</a>
+        <a href="{{ url_for('index') }}" class="figma-admin-btn" style="background:#6c637a; color:#fff;">Back to Home</a>
+        <div style="margin-top:32px;">
+            <div class="figma-admin-title" style="font-size:1.3rem; color:#222; margin-bottom:12px;">Movies</div>
+            <ul class="figma-admin-list">
+                {% for movie in movies %}
+                    <li class="figma-admin-movie">
+                        <strong>{{ movie['title'] }}</strong> (₱{{ movie['price'] }})
+                        <a href="{{ url_for('edit_movie', movie_id=movie['id']) }}" class="figma-admin-btn-sm">Edit</a>
+                        <a href="{{ url_for('delete_movie', movie_id=movie['id']) }}" class="figma-admin-btn-sm" style="background:#6c637a; color:#fff;">Delete</a>
+                        <div style="margin-top:10px;">
+                            <span style="font-weight:bold;">Showtimes:</span>
+                            {% for show in showtimes %}
+                                {% if show['movie_id'] == movie['id'] %}
+                                    <span class="figma-admin-showtime">{{ show['time'] }}
+                                        <a href="{{ url_for('delete_showtime', showtime_id=show['id']) }}" class="figma-admin-btn-sm" style="background:#bdbdbd; color:#222; margin-left:8px;">Delete</a>
+                                    </span>
+                                {% endif %}
+                            {% endfor %}
+                            <a href="{{ url_for('add_showtime', movie_id=movie['id']) }}" class="figma-admin-btn-sm" style="background:#f7b731; color:#222; margin-left:8px;">Add Showtime</a>
+                        </div>
+                        <td>{{ movie['rating'] }}</td>
                     </li>
-                </ul>
-            </li>
-        {% endfor %}
-    </ul>
-</div>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
 </body>
 </html>
