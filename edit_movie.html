@@ -1,25 +1,45 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Edit Movie</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-</head>
-<body>
-<div class="container mt-4">
-    <h1>Edit Movie</h1>
-    <form method="post">
-        <div class="mb-3">
-            <label class="form-label">Title:</label>
-            <input type="text" class="form-control" name="title" value="{{ movie['title'] }}" required>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Price:</label>
-            <input type="number" class="form-control" name="price" value="{{ movie['price'] }}" required>
-        </div>
-        <button type="submit" class="btn btn-warning">Update Movie</button>
-        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">Cancel</a>
-    </form>
-</div>
-</body>
-</html>
+            <!-- Showtimes -->
+            <div style="display: flex; gap: 160px; align-items: flex-start; position: relative; min-height: 320px;">
+                <div>
+                    {% if showtimes_col1 %}
+                        <div style="font-weight: bold; font-size: 1.2rem; color: #3a3a4a; margin-bottom: 2px; letter-spacing: 1px;">Cinema 1</div>
+                        {% for show in showtimes_col1 %}
+                            <div style="font-weight: bold; font-size: 1.1rem; margin-bottom: 8px;">{{ show['date'] }}</div>
+                            <ul style="list-style: none; padding: 0; margin: 0; font-size: 1rem; display: flex; flex-direction: column; gap: 12px; font-weight: bold;">
+                                <li>
+                                    <span style="border-radius: 12px; padding: 8px 22px; font-size: 1.1rem; font-weight: bold; background: #b2ffb2; color: #222; margin-right: 12px;">
+                                        {{ show['time'] }}
+                                    </span>
+                                    <span style="margin-left: 8px; color: #888;">{{ show['cinema'] }}</span>
+                                </li>
+                            </ul>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                <div>
+                    {% if showtimes_col2 %}
+                        <div style="font-weight: bold; font-size: 1.2rem; color: #3a3a4a; margin-bottom: 2px; letter-spacing: 1px;">Cinema 2</div>
+                        {% for show in showtimes_col2 %}
+                            <div style="font-weight: bold; font-size: 1.1rem; margin-bottom: 8px;">{{ show['date'] }}</div>
+                            <ul style="list-style: none; padding: 0; margin: 0; font-size: 1rem; display: flex; flex-direction: column; gap: 12px; font-weight: bold;">
+                                <li>
+                                    <span style="border-radius: 12px; padding: 8px 22px; font-size: 1.1rem; font-weight: bold; background: #b2ffb2; color: #222; margin-right: 12px;">
+                                        {{ show['time'] }}
+                                    </span>
+                                    <span style="margin-left: 8px; color: #888;">{{ show['cinema'] }}</span>
+                                </li>
+                            </ul>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                <div style="position: absolute; right: 0; bottom: 0; display: flex; align-items: flex-end;">
+                    {% if not session.get('user_id') %}
+                        <button class="book-btn" disabled style="background: #fd0000; color: #fff; border: none; border-radius: 20px; padding: 28px 48px; font-size: 2rem; font-weight: bold; cursor: not-allowed; margin-left: 32px;">BOOK NOW!</button>
+                        <div style="margin-top: 12px; color: #fd0000; font-weight: bold; font-size: 1.1rem; text-align: center; width: 100%;">You must be logged in to book tickets.</div>
+                    {% else %}
+                        <form method="get" action="{{ url_for('book', movie_id=movie['id']) }}">
+                            <button class="book-btn" style="background: #fd0000; color: #fff; border: none; border-radius: 20px; padding: 28px 48px; font-size: 2rem; font-weight: bold; cursor: pointer; margin-left: 32px;">BOOK NOW!</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
