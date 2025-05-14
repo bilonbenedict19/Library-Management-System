@@ -3,19 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <title>Add Showtime</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Inter:400,700&display=swap" rel="stylesheet">
+    <style>
+        body { background: #f9f4f3; font-family: 'Inter', sans-serif; margin: 0; }
+        .cornhub-header {
+            background: #fd0000;
+            padding: 0 0 0 32px;
+            height: 90px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+        .cornhub-logo { height: 60px; }
+        .cornhub-title { font-size: 2.2rem; font-weight: bold; color: #222; letter-spacing: 1px; }
+        .cornhub-title span { color: #f7b731; }
+        .figma-form-card { max-width: 420px; margin: 64px auto; background: #fff; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); padding: 48px 32px; }
+        .figma-form-title { font-size: 1.7rem; font-weight: bold; color: #fd0000; margin-bottom: 24px; text-align: center; letter-spacing: 1px; }
+        .figma-form-btn { background: #fd0000; color: #fff; border: none; border-radius: 20px; padding: 10px 32px; font-weight: bold; width: 100%; margin-top: 16px; font-size: 1rem; transition: background 0.2s; }
+        .figma-form-btn:hover { background: #f7b731; color: #222; }
+        .form-label { font-weight: bold; color: #222; }
+        .form-control { border-radius: 12px; padding: 10px 16px; border: 1px solid #ccc; font-size: 1rem; }
+    </style>
 </head>
 <body>
-<div class="container mt-4">
-    <h1>Add Showtime</h1>
-    <form method="post">
-        <div class="mb-3">
-            <label class="form-label">Time:</label>
-            <input type="text" class="form-control" name="time" required>
-        </div>
-        <button type="submit" class="btn btn-success">Add Showtime</button>
-        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">Cancel</a>
-    </form>
-</div>
+    <div class="cornhub-header">
+        <img src="{{ url_for('static', filename='cornhub-logo.png') }}" class="cornhub-logo" alt="CornHub Logo">
+        <div class="cornhub-title">Corn<span>Hub</span></div>
+    </div>
+    <div class="figma-form-card">
+        <div class="figma-form-title">Add Showtime</div>
+        <form method="post">
+            <div class="mb-3">
+                <label for="time" class="form-label">Showtime:</label>
+                <input type="text" class="form-control" name="time" required placeholder="e.g. 7:00 PM">
+            </div>
+            <button type="submit" class="figma-form-btn">Add Showtime</button>
+        </form>
+    </div>
 </body>
 </html>
