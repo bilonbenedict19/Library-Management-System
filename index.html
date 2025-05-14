@@ -2,82 +2,349 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Movie Ticketing System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CornHub - Movie Ticketing System</title>
+    <link href="https://fonts.googleapis.com/css?family=Inter:400,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body { background: #f9f4f3; font-family: 'Inter', sans-serif; margin: 0; }
+        .cornhub-header {
+            background: #fd0000;
+            padding: 0 0 0 32px;
+            height: 90px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+        .cornhub-logo { height: 60px; }
+        .cornhub-title { font-size: 2.2rem; font-weight: bold; color: #222; letter-spacing: 1px; }
+        .cornhub-title span { color: #f7b731; }
+        .movie-cards-row {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 48px 0 0 0;
+        }
+        .movie-card {
+            background: #e0e0e0;
+            border-radius: 20px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+            padding: 0 0 32px 0;
+            text-align: center;
+            min-width: 260px;
+            max-width: 280px;
+            margin-bottom: 24px;
+            transition: box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .movie-poster {
+            width: 100%;
+            height: 320px;
+            object-fit: cover;
+            border-radius: 18px 18px 0 0;
+            margin-bottom: 18px;
+            background: #ddd;
+        }
+        .movie-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+            margin-top: 8px;
+            letter-spacing: 1px;
+        }
+        .showtime-list {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 18px;
+            font-size: 1rem;
+        }
+        .buy-btn, .buy-btn:disabled {
+            background: #fd0000;
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 0;
+            font-weight: bold;
+            width: 80%;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+            margin-top: 8px;
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+        .buy-btn:disabled { background: #bdbdbd; color: #fff; }
+        .main-bg { background: #f9f4f3; min-height: 100vh; }
+        .vertical-toggle-bar {
+            position: fixed;
+            top: 35%;
+            right: 0;
+            z-index: 200;
+            background: #6c6c6c;
+            color: #fff;
+            border-radius: 16px 0 0 16px;
+            width: 48px;
+            height: 220px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.1rem;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            letter-spacing: 2px;
+            transition: background 0.2s;
+        }
+        .vertical-toggle-bar.left {
+            left: 0;
+            right: auto;
+            border-radius: 0 16px 16px 0;
+        }
+        .movie-list-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 48px 0 0 0;
+        }
+        .movie-row {
+            display: flex;
+            align-items: stretch;
+            background: none;
+            margin-bottom: 32px;
+            border-radius: 20px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+            overflow: hidden;
+            background: #e0e0e0;
+        }
+        .movie-row .movie-poster {
+            width: 220px;
+            height: 320px;
+            object-fit: cover;
+            border-radius: 20px 0 0 20px;
+            margin: 0;
+            background: #ddd;
+            flex-shrink: 0;
+        }
+        .movie-row .movie-info {
+            flex: 1;
+            background: #e6e6e6;
+            padding: 32px 32px 32px 32px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .movie-row .movie-title {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .movie-row .rating-badge {
+            display: inline-block;
+            background: #2196f3;
+            color: #fff;
+            font-weight: bold;
+            border-radius: 12px;
+            padding: 4px 16px;
+            font-size: 1rem;
+            margin-right: 12px;
+        }
+        .movie-row .rating-badge.r-13 { background: #f7b731; color: #222; }
+        .movie-row .rating-badge.pg { background: #2ec4b6; color: #222; }
+        .movie-row .rating-badge.r { background: #fd0000; color: #fff; }
+        .movie-row .rating-badge.g { background: #4caf50; color: #fff; }
+        .movie-row .showtimes-table {
+            width: 100%;
+            margin-top: 8px;
+            margin-bottom: 0;
+            font-size: 1.1rem;
+            color: #222;
+            border-collapse: separate;
+            border-spacing: 32px 0;
+        }
+        .movie-row .see-info-btn {
+            background: #fd0000;
+            color: #fff;
+            border: none;
+            border-radius: 0 20px 20px 0;
+            font-weight: bold;
+            font-size: 1.3rem;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            padding: 0 0 0 0;
+            width: 80px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            letter-spacing: 2px;
+            transition: background 0.2s;
+        }
+    </style>
 </head>
 <body>
-<div class="container mt-4">
-    <h1 class="mb-4">Movie Ticketing System</h1>
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        <div class="alert alert-info">
-        {% for message in messages %}
-          <div>{{ message }}</div>
-        {% endfor %}
-        </div>
-      {% endif %}
-    {% endwith %}
-
-    {% if not session.get('user_id') %}
-    <div class="row">
-        <div class="col-md-6">
-            <h2>Login</h2>
-            <form method="post" action="{{ url_for('login') }}">
-                <div class="mb-2">
-                    <input type="text" class="form-control" name="login_username" placeholder="Username" required>
-                </div>
-                <div class="mb-2">
-                    <input type="password" class="form-control" name="login_password" placeholder="Password" required>
-                </div>
-                <button type="submit" class="btn btn-primary">Login</button>
-            </form>
-        </div>
-        <div class="col-md-6">
-            <h2>Sign Up</h2>
-            <form method="post" action="{{ url_for('signup') }}">
-                <div class="mb-2">
-                    <input type="text" class="form-control" name="signup_username" placeholder="Username" required>
-                </div>
-                <div class="mb-2">
-                    <input type="password" class="form-control" name="signup_password" placeholder="Password" required>
-                </div>
-                <button type="submit" class="btn btn-success">Sign Up</button>
-            </form>
-        </div>
-    </div>
-    {% else %}
-    <div class="mb-3">
-        <span>Welcome, {{ session['username'] }}!</span>
-        <a href="{{ url_for('logout') }}" class="btn btn-outline-secondary btn-sm ms-2">Logout</a>
-        {% if session.get('role') == 'admin' %}
-            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-warning btn-sm ms-2">Admin Dashboard</a>
-        {% endif %}
-    </div>
+<!-- Main Content (movie grid, etc.) -->
+<div class="cornhub-header">
+  <img src="{{ url_for('static', filename='cornhub-logo.png') }}" class="cornhub-logo" alt="CornHub Logo">
+  <div class="cornhub-title">Corn<span>Hub</span></div>
+  <div style="flex:1"></div>
+  {% if not session.get('user_id') %}
+    <button id="cornhub-login-btn" style="margin-right:12px; background:#fff; color:#fd0000; font-weight:bold; border-radius:16px; padding:10px 28px; font-size:1.1rem; border:2px solid #fd0000; cursor:pointer;">Login</button>
+    <button id="cornhub-signup-btn" style="margin-right:32px; background:#fd0000; color:#fff; font-weight:bold; border-radius:16px; padding:10px 28px; font-size:1.1rem; border:none; cursor:pointer;">Sign Up</button>
+  {% else %}
+    {% if session.get('role') == 'admin' %}
+      <a href="{{ url_for('admin_dashboard') }}" style="margin-right:12px; background:#f7b731; color:#222; font-weight:bold; border-radius:16px; padding:10px 28px; font-size:1.1rem; border:none; cursor:pointer; text-decoration:none; display:inline-block;">Admin Dashboard</a>
     {% endif %}
-
-    <h2 class="mt-4">Movies</h2>
-    <div class="row">
-    {% for movie in movies %}
-        <div class="col-md-4 mb-3">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">{{ movie['title'] }}</h5>
-                    <p class="card-text">₱{{ movie['price'] }}</p>
-                    <ul>
-                        {% for show in showtimes_by_movie[movie['id']] %}
-                            <li>{{ show['time'] }}</li>
-                        {% endfor %}
-                    </ul>
-                    {% if session.get('user_id') %}
-                        <a href="{{ url_for('book', movie_id=movie['id']) }}" class="btn btn-primary">Book</a>
-                    {% else %}
-                        <button class="btn btn-secondary" disabled>Login to Book</button>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    {% endfor %}
-    </div>
+    <form method="post" action="{{ url_for('logout') }}" style="display:inline; margin:0;">
+      <button type="submit" style="margin-right:32px; background:#fff; color:#fd0000; font-weight:bold; border-radius:16px; padding:10px 28px; font-size:1.1rem; border:2px solid #fd0000; cursor:pointer;">Logout</button>
+    </form>
+  {% endif %}
 </div>
+
+<!-- Vertical Toggle Bar -->
+<div id="toggle-bar" class="vertical-toggle-bar" onclick="toggleMovieView()">UPCOMING MOVIES</div>
+
+<div class="main-bg">
+  <div class="movie-list-container">
+    <div id="now-showing-list">
+      {% for movie in now_showing %}
+      <div class="movie-row">
+        <img src="{{ movie['poster_url'] or 'https://via.placeholder.com/220x320?text=Poster' }}" class="movie-poster" alt="{{ movie['title'] }} poster" />
+        <div class="movie-info">
+          <div class="movie-title">
+            <span class="rating-badge {{ movie['rating']|lower|replace('-', '') }}">{{ movie['rating'] }}</span>
+            {{ movie['title'] }}
+          </div>
+          <div style="font-size:1.1rem; color:#222; margin-bottom:8px;">THURSDAY, 22 MAY 2025</div>
+          <table class="showtimes-table">
+            <tr>
+              <td>8:30AM - 10:30AM</td>
+              <td>8:30AM - 10:30AM</td>
+            </tr>
+            <tr>
+              <td>10:40AM - 12:40PM</td>
+              <td>10:40AM - 12:40PM</td>
+            </tr>
+            <tr>
+              <td>12:50PM - 2:50PM</td>
+              <td>12:50PM - 2:50PM</td>
+            </tr>
+          </table>
+        </div>
+        <a href="{{ url_for('movie_details', movie_id=movie['id']) }}" class="see-info-btn">SEE INFO</a>
+      </div>
+      {% endfor %}
+    </div>
+    <div id="upcoming-list" style="display:none;">
+      {% for movie in upcoming_movies %}
+      <div class="movie-row">
+        <img src="{{ movie['poster_url'] or 'https://via.placeholder.com/220x320?text=Poster' }}" class="movie-poster" alt="{{ movie['title'] }} poster" />
+        <div class="movie-info">
+          <div class="movie-title">
+            <span class="rating-badge {{ movie['rating']|lower|replace('-', '') }}">{{ movie['rating'] }}</span>
+            {{ movie['title'] }}
+          </div>
+          <div style="font-size:1.1rem; color:#222; margin-bottom:8px;">COMING SOON</div>
+        </div>
+        <a href="{{ url_for('movie_details', movie_id=movie['id']) }}" class="see-info-btn" style="background:#bdbdbd; cursor:default; pointer-events:none;">SEE INFO</a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Figma-Inspired Auth Modal -->
+<div id="figma-auth-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.25); z-index:1000; align-items:center; justify-content:center;">
+  <div style="position:relative; width:700px; min-height:400px; background:#e6e6e6; border-radius:24px; display:flex; box-shadow:0 8px 32px rgba(0,0,0,0.10); overflow:hidden;">
+    <!-- Decorative shapes -->
+    <div style="position:absolute; left:0; bottom:0; width:220px; height:120px; background:#fd0000; border-radius:60px 60px 120px 120px; z-index:1;"></div>
+    <div style="position:absolute; left:0; top:0; width:180px; height:100px; background:#2ec4b6; border-radius:0 0 100px 100px; z-index:1;"></div>
+    <div style="position:absolute; right:40px; top:0; width:200px; height:100px; background:#b48b8b; border-radius:0 0 100px 100px; z-index:1;"></div>
+    <!-- Content -->
+    <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 24px; z-index:2;">
+      <img src="{{ url_for('static', filename='cornhub-logo.png') }}" style="width:80px; margin-bottom:16px;">
+      <div style="font-size:2rem; font-weight:bold; color:#222; letter-spacing:1px;">Corn<span style="color:#f7b731;">Hub</span></div>
+    </div>
+    <div style="flex:1.2; display:flex; flex-direction:column; justify-content:center; padding:40px 32px; z-index:2;">
+      <div id="auth-modal-title" style="font-size:1.5rem; font-weight:bold; margin-bottom:8px;">Welcome!<br>Sign in to your account</div>
+      <form id="auth-login-form" method="post" action="{{ url_for('login') }}">
+        <input type="text" name="login_username" placeholder="Username" required style="width:100%; padding:12px 16px; border-radius:20px; border:none; margin-bottom:16px; font-size:1rem; background:#fff; outline:none;">
+        <input type="password" name="login_password" placeholder="Password" required style="width:100%; padding:12px 16px; border-radius:20px; border:none; margin-bottom:16px; font-size:1rem; background:#fff; outline:none;">
+        <div style="display:flex; gap:16px; margin-top:8px;">
+          <button type="submit" style="flex:1; padding:10px 0; border-radius:20px; border:none; font-weight:bold; font-size:1rem; cursor:pointer; background:#fd0000; color:#fff;">Sign In</button>
+          <button type="button" onclick="showSignup()" style="flex:1; padding:10px 0; border-radius:20px; border:2px solid #fd0000; font-weight:bold; font-size:1rem; background:#fff; color:#fd0000; text-align:center;">Sign Up</button>
+        </div>
+      </form>
+      <form id="auth-signup-form" method="post" action="{{ url_for('signup') }}" style="display:none;">
+        <input type="text" name="signup_username" placeholder="Username" required style="width:100%; padding:12px 16px; border-radius:20px; border:none; margin-bottom:16px; font-size:1rem; background:#fff; outline:none;">
+        <input type="password" name="signup_password" placeholder="Password" required style="width:100%; padding:12px 16px; border-radius:20px; border:none; margin-bottom:16px; font-size:1rem; background:#fff; outline:none;">
+        <div style="display:flex; gap:16px; margin-top:8px;">
+          <button type="submit" style="flex:1; padding:10px 0; border-radius:20px; border:none; font-weight:bold; font-size:1rem; cursor:pointer; background:#f7b731; color:#222;">Sign Up</button>
+          <button type="button" onclick="showLogin()" style="flex:1; padding:10px 0; border-radius:20px; border:2px solid #f7b731; font-weight:bold; font-size:1rem; background:#fff; color:#f7b731; text-align:center;">Sign In</button>
+        </div>
+      </form>
+      <button onclick="closeAuthModal()" style="position:absolute; top:18px; right:24px; background:none; border:none; font-size:2rem; color:#888; cursor:pointer; z-index:3;">&times;</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function openAuthModal(mode) {
+  document.getElementById('figma-auth-modal').style.display = 'flex';
+  if (mode === 'signup') {
+    showSignup();
+  } else {
+    showLogin();
+  }
+}
+function closeAuthModal() {
+  document.getElementById('figma-auth-modal').style.display = 'none';
+}
+function showSignup() {
+  document.getElementById('auth-login-form').style.display = 'none';
+  document.getElementById('auth-signup-form').style.display = 'block';
+  document.getElementById('auth-modal-title').innerHTML = 'Create your account';
+}
+function showLogin() {
+  document.getElementById('auth-login-form').style.display = 'block';
+  document.getElementById('auth-signup-form').style.display = 'none';
+  document.getElementById('auth-modal-title').innerHTML = 'Welcome!<br>Sign in to your account';
+}
+// Attach to header buttons
+window.addEventListener('DOMContentLoaded', function() {
+  var loginBtn = document.getElementById('cornhub-login-btn');
+  var signupBtn = document.getElementById('cornhub-signup-btn');
+  if (loginBtn) loginBtn.onclick = function() { openAuthModal('login'); };
+  if (signupBtn) signupBtn.onclick = function() { openAuthModal('signup'); };
+});
+
+let showingNow = true;
+function toggleMovieView() {
+  showingNow = !showingNow;
+  document.getElementById('now-showing-list').style.display = showingNow ? 'block' : 'none';
+  document.getElementById('upcoming-list').style.display = showingNow ? 'none' : 'block';
+  const bar = document.getElementById('toggle-bar');
+  if (showingNow) {
+    bar.textContent = 'UPCOMING MOVIES';
+    bar.classList.remove('left');
+    bar.classList.add('vertical-toggle-bar');
+    bar.style.right = '0';
+    bar.style.left = '';
+  } else {
+    bar.textContent = 'SHOWING MOVIES';
+    bar.classList.add('left');
+    bar.classList.add('vertical-toggle-bar');
+    bar.style.left = '0';
+    bar.style.right = '';
+  }
+}
+</script>
+
+<!-- Add Bootstrap JS for modal functionality -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
