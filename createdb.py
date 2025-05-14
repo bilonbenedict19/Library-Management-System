@@ -4,12 +4,15 @@ from werkzeug.security import generate_password_hash
 conn = sqlite3.connect('movies.db')
 c = conn.cursor()
 
+
+
 # Create tables
 c.execute('''
 CREATE TABLE IF NOT EXISTS movies (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
-    price INTEGER NOT NULL
+    price INTEGER NOT NULL,
+    status TEXT DEFAULT 'now_showing'
 )
 ''')
 
@@ -18,6 +21,8 @@ CREATE TABLE IF NOT EXISTS showtimes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     movie_id INTEGER,
     time TEXT,
+    date TEXT,
+    cinema TEXT,
     FOREIGN KEY(movie_id) REFERENCES movies(id)
 )
 ''')
@@ -27,7 +32,8 @@ CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
-    role TEXT DEFAULT 'user'
+    role TEXT DEFAULT 'user',
+    balance INTEGER DEFAULT 0
 )
 ''')
 
@@ -58,25 +64,43 @@ CREATE TABLE IF NOT EXISTS seats (
 )
 ''')
 
+# --- MIGRATION LOGIC FOR NEW COLUMNS ---
+def add_column_if_not_exists(table, column, coltype):
+    c.execute(f"PRAGMA table_info({table})")
+    columns = [info[1] for info in c.fetchall()]
+    if column not in columns:
+        c.execute(f"ALTER TABLE {table} ADD COLUMN {column} {coltype}")
+
+# Add 'rating' and 'poster_url' to movies if missing
+add_column_if_not_exists('movies', 'rating', 'TEXT')
+add_column_if_not_exists('movies', 'poster_url', 'TEXT')
+
+# Add 'date' and 'cinema' to showtimes if missing
+add_column_if_not_exists('showtimes', 'date', 'TEXT')
+add_column_if_not_exists('showtimes', 'cinema', 'TEXT')
+
+# --- END MIGRATION LOGIC ---
+
 # Insert sample data
-c.execute("INSERT INTO movies (title, price) VALUES ('Inception', 10)")
-c.execute("INSERT INTO movies (title, price) VALUES ('The Matrix', 12)")
-c.execute("INSERT INTO movies (title, price) VALUES ('Interstellar', 15)")
+c.execute("INSERT INTO movies (title, price, rating, poster_url) VALUES ('Inception', 10, 'PG-13', 'https://link-to-inception-poster.jpg')")
+c.execute("INSERT INTO movies (title, price, rating, poster_url) VALUES ('The Matrix', 12, 'R', 'https://link-to-matrix-poster.jpg')")
+c.execute("INSERT INTO movies (title, price, rating, poster_url) VALUES ('Interstellar', 15, 'PG', 'https://link-to-interstellar-poster.jpg')")
 
-c.execute("INSERT INTO showtimes (movie_id, time) VALUES (1, '1:00 PM')")
-c.execute("INSERT INTO showtimes (movie_id, time) VALUES (1, '4:00 PM')")
-c.execute("INSERT INTO showtimes (movie_id, time) VALUES (1, '7:00 PM')")
-c.execute("INSERT INTO showtimes (movie_id, time) VALUES (2, '2:00 PM')")
-c.execute("INSERT INTO showtimes (movie_id, time) VALUES (2, '5:00 PM')")
-c.execute("INSERT INTO showtimes (movie_id, time) VALUES (2, '8:00 PM')")
-c.execute("INSERT INTO showtimes (movie_id, time) VALUES (3, '12:00 PM')")
-c.execute("INSERT INTO showtimes (movie_id, time) VALUES (3, '3:00 PM')")
-c.execute("INSERT INTO showtimes (movie_id, time) VALUES (3, '6:00 PM')")
+# Insert sample showtimes with date and cinema
+c.execute("INSERT INTO showtimes (movie_id, time, date, cinema) VALUES (1, '1:00 PM', '2025-05-22', 'Cinema 1')")
+c.execute("INSERT INTO showtimes (movie_id, time, date, cinema) VALUES (1, '4:00 PM', '2025-05-22', 'Cinema 1')")
+c.execute("INSERT INTO showtimes (movie_id, time, date, cinema) VALUES (1, '7:00 PM', '2025-05-22', 'Cinema 2')")
+c.execute("INSERT INTO showtimes (movie_id, time, date, cinema) VALUES (2, '2:00 PM', '2025-05-23', 'Cinema 1')")
+c.execute("INSERT INTO showtimes (movie_id, time, date, cinema) VALUES (2, '5:00 PM', '2025-05-23', 'Cinema 2')")
+c.execute("INSERT INTO showtimes (movie_id, time, date, cinema) VALUES (2, '8:00 PM', '2025-05-24', 'Cinema 1')")
+c.execute("INSERT INTO showtimes (movie_id, time, date, cinema) VALUES (3, '12:00 PM', '2025-05-24', 'Cinema 2')")
+c.execute("INSERT INTO showtimes (movie_id, time, date, cinema) VALUES (3, '3:00 PM', '2025-05-25', 'Cinema 1')")
+c.execute("INSERT INTO showtimes (movie_id, time, date, cinema) VALUES (3, '6:00 PM', '2025-05-25', 'Cinema 2')")
 
-# 5x5 seat grid: A1–A5, B1–B5, ..., E1–E5 for each showtime
+# 10x5 seat grid: A1–A10, B1–B10, ..., E1–E10 for each showtime
 showtime_ids = [row[0] for row in c.execute('SELECT id FROM showtimes').fetchall()]
 seat_rows = ['A', 'B', 'C', 'D', 'E']
-seat_numbers = [str(i) for i in range(1, 6)]
+seat_numbers = [str(i) for i in range(1, 11)]  # 1 to 10
 for showtime_id in showtime_ids:
     for row in seat_rows:
         for num in seat_numbers:
