@@ -3,18 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <title>Booking Confirmation</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Inter:400,700&display=swap" rel="stylesheet">
+    <style>
+        body { background: #f9f4f3; font-family: 'Inter', sans-serif; margin: 0; }
+        .cornhub-header {
+            background: #fd0000;
+            padding: 0 0 0 32px;
+            height: 90px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+        .cornhub-logo { height: 60px; }
+        .cornhub-title { font-size: 2.2rem; font-weight: bold; color: #222; letter-spacing: 1px; }
+        .cornhub-title span { color: #f7b731; }
+        .figma-confirm-card {
+            max-width: 480px;
+            margin: 64px auto;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            padding: 56px 32px 40px 32px;
+            text-align: center;
+        }
+        .figma-confirm-title { color: #43a047; font-size: 2.2rem; font-weight: bold; margin-bottom: 18px; letter-spacing: 1px; }
+        .figma-confirm-detail { font-size: 1.1rem; margin-bottom: 10px; }
+        .figma-confirm-label { color: #fd0000; font-weight: bold; }
+        .figma-confirm-seats { color: #f7b731; font-weight: bold; }
+        .figma-confirm-btn {
+            background: #fd0000;
+            color: #fff;
+            border: none;
+            border-radius: 20px;
+            padding: 12px 32px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-top: 24px;
+            transition: background 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .figma-confirm-btn:hover { background: #f7b731; color: #222; }
+    </style>
 </head>
 <body>
-<div class="container mt-4">
-    <h1>Booking Confirmation</h1>
-    <div class="alert alert-success">
-        <p>Thank you, {{ name }}! Your booking for <strong>{{ movie['title'] }}</strong> is confirmed.</p>
-        <p>Tickets: {{ tickets }}</p>
-        <p>Seats: {{ seats|join(', ') }}</p>
-        <p>Payment Status: {% if paid %}<span class="text-success">Paid</span>{% else %}<span class="text-danger">Not Paid</span>{% endif %}</p>
+    <div class="cornhub-header">
+        <img src="{{ url_for('static', filename='cornhub-logo.png') }}" class="cornhub-logo" alt="CornHub Logo">
+        <div class="cornhub-title">Corn<span>Hub</span></div>
     </div>
-    <a href="{{ url_for('index') }}" class="btn btn-primary">Back to Home</a>
-</div>
+    <div class="figma-confirm-card">
+        <div class="figma-confirm-title">Booking Confirmed! 🎉</div>
+        <div class="figma-confirm-detail">Thank you, <span class="figma-confirm-label">{{ name }}</span>!</div>
+        <div class="figma-confirm-detail">Movie: <strong>{{ movie['title'] }}</strong></div>
+        <div class="figma-confirm-detail">Tickets: <strong>{{ tickets }}</strong></div>
+        <div class="figma-confirm-detail">Seats: <span class="figma-confirm-seats">{{ seats|join(', ') }}</span></div>
+        <div class="figma-confirm-detail">Cost: <span class="figma-confirm-label">₱{{ total_cost }}</span></div>
+        <div class="figma-confirm-detail">New Balance: <span class="figma-confirm-label">₱{{ new_balance }}</span></div>
+        <div class="figma-confirm-detail">Payment Status: {% if paid %}<span style="color:#43a047;font-weight:bold;">Paid</span>{% else %}<span style="color:#fd0000;font-weight:bold;">Not Paid</span>{% endif %}</div>
+        <a href="{{ url_for('index') }}" class="figma-confirm-btn">Back to Home</a>
+    </div>
 </body>
 </html>
